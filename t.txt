@@ -1,0 +1,1476 @@
+﻿1
+—----------------------------------------------------------------------------------------------------------------------- 
+1. WAP to create your own ‘C’ library using macros to find factorial of a number [05 marks] 
+prac.h
+#define fact(n) ({\
+int res = 1;\
+int i = 1;\
+for (i;i<=n;i++){\
+res *= i;\
+}\
+res;\
+})
+
+
+prac.c
+#include<stdio.h>
+#include "prac.h"
+int main(){
+        int n,res;
+        printf("Enter the number: ");
+        scanf("%d",&n);
+        res = fact(n);
+        printf("Factorial = %d",res);
+        return 0;
+        
+}
+
+
+2. Write a Lex program to count the number of vowels and consonants of a token [05 marks] 
+For Execution (flex spcc2.l -> gcc lex.yy.c -> a.exe)
+spcc2.l
+%{
+#include<stdio.h>
+int vowelCount = 0;
+int consonantCount = 0;
+%}
+%%
+[AaEeIiOoUu] {vowelCount++;}
+[A-Za-z] { consonantCount++;}
+. ;
+\n {
+        printf("Number of Vowels : %d",vowelCount);
+        printf(“\nNumber of Consonants : %d",consonantCount);
+        vowelCount = 0;
+        consonantCount = 0;
+        return 0;
+}
+%%
+
+
+int main(){
+        printf("Enter the text: ");
+        yylex();
+        return 0;
+}
+int yywrap(){
+        return 1;
+}
+
+
+3. Write a program to display any given 3AC statement in Quadruples form [05 marks] 
+
+
+class Quadruple:
+    def __init__(self, op, arg1, arg2, result):
+        self.op = op
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.result = result
+
+
+def generate_quadruples(three_address_code):
+    quadruples = []
+    for line in three_address_code:
+        parts = line.split()
+        if parts[-2] in ['+', '-', '*', '/']:
+            if len(parts) == 5:
+                quadruples.append(Quadruple(parts[-2], parts[2],parts[-1], parts[0]))
+            else:
+                quadruples.append(Quadruple(parts[-2], parts[-1],'', parts[0]))
+
+
+        else:
+            quadruples.append(Quadruple(parts[1], parts[-1], '', parts[0]))
+    return quadruples
+
+
+def display_quadruples_table(quadruples):
+    print("{:<4} {:<6} {:<6} {:<6}".format("OP", "ARG1 ", "ARG2", "RESULT"))
+    for quad in quadruples:
+        print("{:<4} {:<6} {:<6} {:<6}".format(quad.op, quad.arg1, quad.arg2, quad.result))
+
+
+three_address_code = []
+n = int(input("Enter the number of statements : "))
+for _ in range(n):
+    print("Enter the 3ac statement: ")
+    three_address_code.append(input())
+
+
+quadruples = generate_quadruples(three_address_code)
+display_quadruples_table(quadruples)
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a program to convert the given computation into three address code. [10 marks]
+ x = (a+b) * (c-d); 
+
+
+import re
+
+
+def generate_three_address_code(expression):
+    # Tokenize the expression
+    tokens = re.findall(r'\(|\)|\w+|\S', expression)
+    # Stack to hold operators and operands
+    stack = []
+    # List to store the generated three-address code
+    three_address_code = []
+    # Temporary variable count
+    temp_count = 1
+    
+    for token in tokens:
+        if token.isalnum():
+            stack.append(token)
+        elif token in {'+', '-', '*', '/'}:
+            stack.append(token)
+        elif token == ')':
+            op2 = stack.pop()
+            operator = stack.pop()
+            op1 = stack.pop()
+            temp = f"t{temp_count}"
+            three_address_code.append(f"{operator} {op1} {op2} {temp}")
+            stack.append(temp)
+            temp_count += 1
+        elif token == '(':
+            continue
+        else:
+            print("Invalid token:", token)
+
+
+    return three_address_code
+
+
+expression = "(a+b) * (c-d)"
+three_address_code = generate_three_address_code(expression)
+for instruction in three_address_code:
+    print(instruction)
+
+
+2. Write a Lex program to count the number of tokens with uppercase characters. [05 marks] 
+spcc5.l
+%{
+#include<stdio.h>
+int upperCase = 0;
+%}
+%%
+[A-Z] {upperCase++;}
+. ;
+\n {
+        printf("Number of Uppercase Characters : %d",upperCase);
+        return 0;
+}
+%%
+int main(){
+        printf("Enter the sentence : ");
+        yylex();
+        return 0;
+}
+ int yywrap(){
+         return 1;
+ }
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a program to create your own ‘C’ library using macros that can find the area of square and rectangle [05 marks] 
+areaa.h
+#define areas(x) (x*x)
+#define arear(x,y) (x*y)
+
+
+spcc6.c
+#include<stdio.h>
+#include<conio.h>
+#include "areaa.h"
+
+
+int main(){
+        float side,res,l,b;
+        int ch;
+        while(1){
+                printf("\n1. Area of Square\n2. Area of Rectangle\n3. Exit\nEnter the choice: ");
+                scanf("%d",&ch);
+                
+                if(ch == 3){
+                        exit(0);
+                }
+                switch(ch){
+                        case 1:
+                                printf("Enter the side for a square : ");
+                                scanf("%f",&side);
+                                res = areas(side);
+                                printf("Result for square with side %.2f is %.2f",side,res);
+                                break;
+                        
+                        case 2:
+                                printf("Enter the length for a rectangle : ");
+                                scanf("%f",&l);
+                                printf("Enter the breadth for a rectangle : ");
+                                scanf("%f",&b);
+                                res = arear(l,b);
+                                printf("Result for rectabgle with length %.2f and breadth %.2f is %.2f",l,b,res);
+                                break;
+                                
+                        default:
+                                printf("Enter a valid choice!");
+                                break;
+                                                        
+                }
+        }
+}
+
+
+2. Write a Lex program to print the number of lines in the source program. [05 marks] 
+%{
+#include<stdio.h>
+int lineCount = 0;
+%}
+%%
+\n {lineCount++ ;}
+. ;
+%%
+int main(){
+        printf("Enter the source code:(ctrl z to stop)\n");
+        yylex();
+        printf("\nNumber of lines : %d",lineCount);
+        return 0;
+}
+
+
+int yywrap(){
+        return 1;
+}
+
+
+
+
+
+
+3. Consider the following Three address code and display Triples 
+f=c+d 
+e=a-f 
+g=b*e 
+class Triple:
+    def __init__(self, op, arg1, arg2, result):
+        self.op = op
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.result = result
+
+
+def generate_triples(three_address_code):
+    triples = []
+    res = []
+    for line in three_address_code:
+        parts = line.split()
+        res .append(parts[0])
+        if parts[-2] in ['+', '-', '*', '/']:
+            if len(parts) == 5:
+                triples.append(Triple(parts[-2], parts[2], parts[-1], parts[0]))
+            else:
+                triples.append(Triple(parts[-2], parts[-1], '', parts[0]))
+        
+        else:
+            triples.append(Triple(parts[1], parts[-1], '', parts[0]))
+    return triples,res
+
+
+def display_triples_table(triples, res):
+    print("{:<6} {:<6} {:<6}".format("OP", "ARG1", "ARG2"))
+    for triple in triples:
+        arg1_str = '(' + str(res.index(triple.arg1)) + ')' if triple.arg1 in res else triple.arg1
+        arg2_str = '(' + str(res.index(triple.arg2)) + ')' if triple.arg2 in res else triple.arg2
+        print("{:<6} {:<6} {:<6}".format(triple.op, arg1_str, arg2_str))
+
+
+three_address_code = []
+n = int(input("Enter the number of statements: "))
+for _ in range(n):
+    print("Enter the 3AC statement: ")
+    three_address_code.append(input())
+
+
+triples,res = generate_triples(three_address_code)
+display_triples_table(triples,res)
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Consider the following program, Display the Pass-1 of the Program [15 marks] 
+START 501 
+A DS 1 
+B DS 1 
+C DS 1 
+READ A 
+READ B 
+MOVER AREG, A 
+ADD AREG, B 
+MOVEM AREG, C 
+PRINT C 
+END 
+
+
+from tabulate import tabulate
+
+
+def pass_1(assembly_code):
+    output_table = []
+    output_lines = ''
+    statements = assembly_code.split('\n')
+    global address
+    if 'START' in statements[0]:
+        statement = statements[0]
+        parts = statement.split()
+        mnemonic, addr = parts
+        address = addr
+        start_value = get_pot(mnemonic)
+        output_lines = f"(AD,{start_value}) - (C, {address})"
+        output_table.append([statement, output_lines])
+    else:
+        print('INVALID CODE')
+        return
+    statements.pop(0)
+    for statement in statements:
+        output_lines = ''
+        if any(key in statement.replace(',','').split() for key in pot.keys()):
+            parts = statement.replace(',','').split()
+            if parts[0] == 'END':
+                end_value = get_pot(parts[0])
+                output_lines, address = allocate_lc_littab(end_value, str(address))
+                if len(output_lines) == 0:
+                    output_line = f"{address} (AD,{end_value}) - -"
+                else:
+                    output_line = output_lines
+                    
+                output_table.append([statement, output_line])
+                continue
+            elif parts[0] == 'LTORG':
+                output_lines = ''
+                end_value = get_pot(parts[0])
+                output_lines, address = allocate_lc_littab(end_value, str(address))
+                output_table.append([statement, output_lines])
+                continue
+            elif parts[0] == 'ORIGIN':
+                address = str(execute_value(parts[1]))
+                output_table.append([statement,''])
+                continue
+            elif parts[1] == 'EQU':
+                dest, mnemonic, value = parts
+                lc = execute_value(value)
+                symbol_table[dest] = lc
+                output_table.append([statement,''])
+                continue 
+        elif any(key in statement.split() for key in dl.keys()):
+            symbol, mnemonic, value = statement.split()
+            symbol_table[symbol] = f"{address}"
+            mnemonic_value = get_dl(mnemonic)
+            if '=' in value:
+                if value in literal_table.keys():
+                    duplicate[value] = value.strip("'")
+                    literal_table[value.strip("'")] = ''
+                    index = list(literal_table.keys()).index(value.strip("'")) + 1
+                else:
+                    literal_table[value] = ''
+                    index = list(literal_table.keys()).index(value) + 1
+                output_lines = f"{address} (DL,{mnemonic_value}) - (L,{index})"
+                if mnemonic_value == '01':
+                    address = str(int(address) + 1)
+            else:
+                temp = value
+                value = str(value).zfill(3)
+                output_lines = f"{address} (DL,{mnemonic_value}) - {value}"
+                if mnemonic_value == '01':
+                    address = str(int(address) + 1)
+                elif mnemonic_value == '02':
+                    address = str(int(address) + int(temp))
+            output_table.append([statement, output_lines])
+            continue
+        
+        elif statement == 'STOP':
+            stop_value = get_mot(statement)
+            output_lines = f"{address} (IS,{stop_value}) - -"
+            output_table.append([statement, output_lines])
+            address = str(int(address) + 1)
+            continue
+        
+        else:
+            parts = statement.split()
+            if len(parts) == 2:
+                mnemonic, dest = parts
+                mnemonic_value = get_mot(mnemonic)
+                if dest not in symbol_table:
+                    symbol_table[dest] = ''
+                index = list(symbol_table.keys()).index(dest) + 1
+                output_lines = f"{address} (IS,{mnemonic_value}) - (S,{index})"
+                output_table.append([statement, output_lines])
+                address = str(int(address) + 1)
+                continue
+            elif len(parts) > 3:
+                label, mnemonic, src, dest = parts
+                insert_label(label, address)
+            elif len(parts) == 3:
+                if parts[1] in mot:
+                    label, mnemonic, dest = parts
+                    insert_label(label, address)
+                    # mnemonic, dest = parts
+                    mnemonic_value = get_mot(mnemonic)
+                    if dest not in symbol_table:
+                        symbol_table[dest] = ''
+                    index = list(symbol_table.keys()).index(dest) + 1
+                    output_lines = f"{address} (IS,{mnemonic_value}) - (S,{index})"
+                    address = str(int(address) + 1)
+                    continue
+                else:
+                    mnemonic, src, dest = parts
+        
+            mnemonic_value = get_mot(mnemonic)
+            reg_value = get_reg(src.strip(','))
+            if '=' in dest:
+                if dest in literal_table.keys():
+                    duplicate[dest] = dest.strip("'")
+                    literal_table[dest.strip("'")] = ''
+                else:
+                    literal_table[dest] = ''
+                index = list(literal_table.keys()).index(dest) + 1
+                output_lines = f"{address} (IS,{mnemonic_value}) {reg_value} (L,{index})"
+            elif dest not in symbol_table:
+                symbol_table[dest] = ''
+                index = list(symbol_table.keys()).index(dest) + 1
+                output_lines = f"{address} (IS,{mnemonic_value}) {reg_value} (S,{index})"
+            else:
+                index = list(symbol_table.keys()).index(dest) + 1
+                output_lines = f"{address} (IS,{mnemonic_value}) {reg_value} (S,{index})"
+            address = str(int(address) + 1)
+            output_table.append([statement, output_lines])
+    return output_table
+
+
+def insert_label(label, address):
+    if label not in symbol_table:
+        symbol_table[label] = address
+    else:
+        raise ValueError('Cannot use the same label more than once')
+    return
+
+
+def execute_value(value):
+    addr = ''
+    try:
+        addr = int(value)
+    except ValueError:
+        import re
+        def replace_variables(match):
+            variable = match.group(1)
+            if variable in symbol_table.keys():
+                return str(symbol_table[variable])
+            else:
+                return match.group(0)
+        eval_expression = re.sub(r"([A-Za-z]\w*)(\d*)", replace_variables, value)
+        addr = eval(eval_expression)
+    return addr
+
+
+def allocate_lc_littab(end_value, address):
+    output_lines = []
+    if not literal_table:
+        index = 1
+    else:
+        index = float('inf')
+    for key, value in literal_table.items():
+        if value == '':
+            index = min(index, list(literal_table.keys()).index(key) + 1)
+            literal_table[key] = address
+            key_value = str(key.strip("'=")).zfill(3)
+            line = f"{address} (AD,{end_value}) - {key_value}"
+            output_lines.append(line)
+            address = str(int(address) + 1)
+    pool_table.append(index)
+    return output_lines, address
+
+
+def get_mot(mnemonic):
+    return mot.get(mnemonic, 'INVALID_MOT')
+    
+def get_reg(reg):
+    reg = reg.strip(",")
+    return registers.get(reg, 'INVALID_REGISTER')
+
+
+def get_dl(mnemonic):
+    return dl.get(mnemonic, 'INVALID_DL')
+
+
+def get_pot(mnemonic):
+    return pot.get(mnemonic, 'INVALID_POT')
+
+
+mot = {
+    'STOP': '00',
+    'ADD': '01',
+    'SUB': '02',
+    'MULT': '03',
+    'MOVER': '04',
+    'MOVEM': '05',
+    'COMP': '06',
+    'BC': '07',
+    'DIV': '08',
+    'READ': '09',
+    'PRINT': '10'
+}
+
+
+pot = {
+    'START': '01',
+    'END': '02',
+    'ORIGIN': '03',
+    'EQU': '04',
+    'LTORG': '05'
+}
+
+
+dl = {
+    'DC': '01',
+    'DS': '02'
+}
+
+
+registers = {
+    'AREG': '01',
+    'BREG': '02',
+    'CREG': '03',
+    'DREG': '04'
+}
+
+
+address = ''
+symbol_table = {}
+literal_table = {}
+duplicate = {}
+pool_table = []
+assembly_code = '''START 501
+A DS 1
+B DS 1
+C DS 1
+READ A
+READ B
+MOVER AREG, A
+ADD AREG, B
+MOVEM AREG, C
+PRINT C
+STOP
+END'''
+
+
+output_table = pass_1(assembly_code)
+
+
+print('\nPass 1:')
+formatted_outputs = []
+for row in output_table:
+    source = row[0]
+    if isinstance(row[1], str):
+        intermediate = row[1]
+    else:
+        intermediate = '\n'.join([_ for _ in row[1]])
+    formatted_outputs.append([source, intermediate])
+print('\nIntermediate Code:')
+print(tabulate(formatted_outputs, headers=["Source code", "Intermediate Code"], tablefmt="grid"))
+
+
+symbol_tab = [(index+1, key, value) for index, (key, value) in enumerate(list(symbol_table.items()))]
+formatted_symbols = []
+for row in symbol_tab:
+    index = row[0]
+    symbol_name = row[1]
+    lc = row[2]
+    formatted_symbols.append([index, symbol_name, lc])
+print('\nSymbol Table:')
+print(tabulate(formatted_symbols, headers=["Index", "Symbol Name", "LC"], tablefmt="grid"))
+
+
+literal_tab = [(index+1, key, value) for index, (key, value) in enumerate(list(literal_table.items()))]
+formatted_literals = []
+for row in literal_tab:
+    index = row[0]
+    literal_name = row[1]
+    if literal_name in duplicate.values():
+        literal_name = "'"+row[1]+"'"
+    lc = row[2]
+    formatted_literals.append([index, literal_name, lc])
+print('\nLiteral Table:')
+print(tabulate(formatted_literals, headers=["Index", "Literal Name", "LC"], tablefmt="grid"))
+
+
+formatted_pools = []
+for row in pool_table:
+    index = pool_table.index(row) + 1
+    pool_entry = row
+    formatted_pools.append([index, pool_entry])
+print('\nPool Table:')
+print(tabulate(formatted_pools, headers=["Index", "Pool Entry"], tablefmt="grid"))
+
+
+—-----------------------------------------------------------------------------------------------------------------------
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a program to remove left recursion from a given context free grammar. [10 marks] Nonterminal ={S,L} terminal={( , x, , ,) } 
+S (L)/x 
+L L,S/S 
+def remove_left_recursion(grammar):
+    nonterminals = set(grammar.keys())
+
+
+    for nonterminal in nonterminals:
+        productions = grammar[nonterminal]
+        new_productions = []
+        left_recursive = []
+        non_left_recursive = []
+
+
+        for production in productions:
+            if production[0] == nonterminal:
+                left_recursive.append(production[1:])
+            else:
+                non_left_recursive.append(production)
+
+
+        if not left_recursive:
+            continue
+
+
+        new_nonterminal = nonterminal + "'"
+        grammar[new_nonterminal] = []
+
+
+        for production in left_recursive:
+            grammar[new_nonterminal].append(production + new_nonterminal)
+        grammar[new_nonterminal].append('')
+
+
+        grammar[nonterminal] = [p + new_nonterminal for p in non_left_recursive]
+
+
+    return grammar
+
+
+def display_grammar(grammar):
+    for nonterminal, productions in grammar.items():
+        print(f"{nonterminal} -> {' | '.join(productions)}")
+
+
+grammar = {}
+nonterminals = input("Enter nonterminals separated by commas: ").split(',')
+for nonterminal in nonterminals:
+    productions = input(f"Enter productions for {nonterminal}: ").split('|')
+    grammar[nonterminal] = [p.strip() for p in productions]
+
+
+print("\nOriginal Grammar:")
+display_grammar(grammar)
+
+
+new_grammar = remove_left_recursion(grammar)
+
+
+print("\nGrammar after removing left recursion:")
+display_grammar(new_grammar)
+
+
+2. Write a lex program to identify all the keywords (if, else, while etc.) [05 marks] 
+%{
+#include <stdio.h>
+int if_count = 0;
+int else_count = 0;
+int while_count = 0;
+%}
+
+
+%%
+if      { if_count++; }
+else    { else_count++; }
+while   { while_count++; }
+[[:alpha:]]+    ; // Ignore other words
+.       ; // Ignore other characters
+
+
+%%
+
+
+int main() {
+        printf("Enter the code: (Ctrl+Z to end)\n");
+    yylex();
+    printf("Occurrences of:\n");
+    printf("if: %d\n", if_count);
+    printf("else: %d\n", else_count);
+    printf("while: %d\n", while_count);
+    return 0;
+}
+
+
+int yywrap(){
+        return 1;
+}
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a program to optimize the given three address code. [10 marks] 
+T1= 5*3+10 // Constant folding 
+T3=T1 //Copy propagation 
+T2=T1+T3 
+T5=4*T2 // common sub-expression elimination 
+T6=4*T2+100 
+
+
+import re
+
+
+def constant_folding(expression):
+    try:
+        variable, expr = expression.split('=')
+        result = eval(expr.strip())
+        return f"{variable.strip()} = {result}"
+    except:
+        return expression
+
+
+def separate_vars_operators(statement):
+    pattern = r"([a-zA-Z0-9_]+|\W+)"  # Matches variables (letters, numbers, underscores) or operators
+    return re.findall(pattern, statement)
+
+
+def copy_propagation(input_lines):
+    variables = {}
+    output_lines = []
+    replace = {}
+    for line in input_lines:
+        line = line.strip()
+        if '=' not in line:
+            continue
+        assignment = line.split('=')
+        variable = assignment[0].strip()
+        expression = assignment[1].strip()
+        modified_expression = ''
+        # Check if the expression is already a variable
+        if expression in variables.keys():
+            replace[variable] = expression
+        separated = separate_vars_operators(expression)
+        for exp in separated:
+            if (exp in replace.keys()):
+                modified_separated = [element.replace(exp, replace[exp]) for element in separated]
+                modified_expression = ''.join(modified_separated)
+                output_lines.append(variable + ' = ' + modified_expression)
+                continue
+        if modified_expression == '':
+            if variable in replace.keys():
+                continue
+            output_lines.append(variable + ' = ' + expression)
+            variables[variable] = expression
+    return output_lines
+
+
+def common_subexpression_elimination(input_lines):
+    expressions = {}
+    output_lines = []
+    for line in input_lines:
+        assignment = line.split('=')
+        variable = assignment[0].strip()
+        expression = assignment[1].strip()
+        for var, exp in expressions.items():
+            expression = expression.replace(exp, var)
+        output_lines.append(variable + ' = ' + expression)
+        expressions[variable] = expression
+    return output_lines
+
+
+def optimize(input_file, output_file):
+    with open(input_file, 'r') as f:
+        input_lines = f.readlines()
+    output_lines = [constant_folding(line) for line in input_lines]
+    output_lines = copy_propagation(output_lines)
+    output_lines = common_subexpression_elimination(output_lines)
+    with open(output_file, 'w') as f:
+        f.write('\n'.join(output_lines))
+
+
+# Example usage:
+optimize('input6.txt', 'output6.txt')
+
+
+2. Write a program to create your own ‘C’ library using macros to print greatest of two numbers [05 marks] 
+greater.h
+#define greaterThan(a, b) ((a) > (b) ? (a) : (b))
+
+
+spcc13.c
+#include<stdio.h>
+#include<conio.h>
+#include "greater.h"
+
+
+int main(){
+        int a,b,res;
+        printf("Enter number a: ");
+        scanf("%d",&a);
+        printf("Enter number b: ");
+        scanf("%d",&b);
+        res = greaterThan(a,b);
+        printf("Greater number is %d",res);
+        return 0;
+}
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a Lex program to count the number of tokens with uppercase and lowercase characters. [05 marks] 
+%{
+#include<stdio.h>
+int upperCase = 0;
+int lowerCase = 0;
+%}
+
+
+%%
+[A-Z]+ {upperCase++;}
+[a-z]+ {lowerCase++;}
+. ;
+%%
+
+
+int main(){
+        printf("Enter the code : (ctrl z to stop)");
+        yylex();
+        printf("Number of uppercase characters: %d\n",upperCase);
+        printf("Number of lowercase characters: %d",lowerCase);
+        return 0;
+}
+
+
+int yywrap(){
+        return 1;
+}
+
+
+2. Write a program to print FIRST() for the following grammar [10 marks] 
+E->TE’ 
+E’->+TE’/ε 
+T->FT’ 
+T’->*FT’/ε 
+F->(ε)/id 
+def first(grammar, nonterminal):
+    first_set = set()
+
+
+    if nonterminal not in grammar:
+        first_set.add(nonterminal)
+        return first_set
+    
+    for production in grammar[nonterminal]:
+        for symbol in production:
+            first_of_symbol = first(grammar, symbol)
+
+
+            first_set |= (first_of_symbol - {'ε'})
+
+
+            if 'ε' not in first_of_symbol:
+                break
+        else:
+            first_set.add('ε')
+
+
+    return first_set
+
+
+def print_first(grammar):
+    for nonterminal in grammar:
+        first_set = first(grammar, nonterminal)
+        print(f"FIRST({nonterminal}): {first_set}")
+
+
+grammar = {
+    'E': [['T', 'E\'']],
+    'E\'': [['+', 'T', 'E\''], ['ε']],
+    'T': [['F', 'T\'']],
+    'T\'': [['*', 'F', 'T\''], ['ε']],
+    'F': [['(', 'E', ')'], ['id']]
+}
+
+
+print("First sets:")
+print_first(grammar)
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a program to create your own ‘C’ library using macros for conversions. [05 marks] (binary ⬄ decimal, binary ⬄ hexadecimal) 
+bin-dec.h
+#define binDec(bin) strtol(bin, NULL, 2)
+#define binHex(bin, hex) sprintf(hex, "%X", binDec(bin))
+
+
+spcc16.c
+#include<stdio.h>
+#include<stdlib.h>
+#include "bin-dec.h"
+
+
+int main() {
+    char hexadecimal[20], binary[20];
+    int ch;
+
+
+    while(1){
+        printf("\n1. Binary to Decimal\n2. Binary to Hexadecimal\n3. Exit\nEnter Choice: ");
+        scanf("%d",&ch);
+        
+        if (ch == 3){
+            exit(0);
+        }
+        
+        switch(ch){
+            case 1:
+                printf("Enter the binary: ");
+                scanf("%s", binary);
+                printf("The decimal for binary %s is %ld", binary, binDec(binary));
+                break;
+            case 2:
+                printf("Enter the binary: ");
+                scanf("%s", binary);
+                binHex(binary, hexadecimal);
+                printf("The hexadecimal for binary %s is %s", binary, hexadecimal);
+                break;
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+
+
+    return 0;
+}
+
+
+2. Write a program to print FOLLOW() for the following grammar [10 marks] 
+E->TE’ 
+E’->+TE’/ε 
+T->FT’ 
+T’->*FT’/ε 
+F->(ε)/id 
+def first(grammar, symbol):
+    first_set = set()
+    
+    if symbol not in grammar:
+        return {symbol}
+    
+    for production in grammar[symbol]:
+        if production[0] == 'ε':
+            first_set.add('ε')
+        else:
+            for symbol in production:
+                first_set |= first(grammar, symbol) - {'ε'}
+                if 'ε' not in first(grammar, symbol):
+                    break
+    
+    return first_set
+
+
+def follow(grammar, start_symbol):
+    follow_set = {}
+    first_sets = {key: set() for key in grammar.keys()}
+    
+    for non_terminal in grammar.keys():
+        follow_set[non_terminal] = set()
+    
+    follow_set[start_symbol].add('$')
+    
+    # Compute FIRST sets for all non-terminals
+    for non_terminal in grammar.keys():
+        first_sets[non_terminal] = first(grammar, non_terminal)
+    
+    # Iterate until no changes occur in follow sets
+    while True:
+        prev_follow_set = {key: value.copy() for key, value in follow_set.items()}
+        for non_terminal, productions in grammar.items():
+            for production in productions:
+                for i in range(len(production)):
+                    symbol = production[i]
+                    if symbol in grammar.keys():
+                        if i < len(production) - 1:
+                            next_symbol = production[i + 1]
+                            if next_symbol in grammar.keys():
+                                follow_set[symbol] |= (first_sets[next_symbol] - {'ε'})
+                                if 'ε' in first_sets[next_symbol]:
+                                    follow_set[symbol] |= follow_set[non_terminal]
+                            else:
+                                follow_set[symbol].add(next_symbol)
+                        else:
+                            follow_set[symbol] |= follow_set[non_terminal]
+        if prev_follow_set == follow_set:
+            break
+    
+    return follow_set
+
+
+if __name__ == "__main__":
+    grammar = {
+        'E': [['T', "E'"]],
+        "E'": [['+', 'T', "E'"], ['ε']],
+        'T': [['F', "T'"]],
+        "T'": [['*', 'F', "T'"], ['ε']],
+        'F': [['(', 'E', ')'], ['id']]
+    }
+    
+    start_symbol = 'E'
+    
+    follow_result = follow(grammar, start_symbol)
+    
+    print("Follow sets:")
+    for non_terminal, follow_set in follow_result.items():
+        print(f"FOLLOW({non_terminal}) = {follow_set}")
+
+
+—-----------------------------------------------------------------------------------------------------------------------
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a program to remove Left Factoring from the given grammar [05 marks] 
+A —-> bE+acF | bE+F 
+def remove_left_factoring(grammar):
+    new_grammar = {}
+
+
+    for nonterminal, productions in grammar.items():
+        common_prefixes = {}
+        new_productions = []
+
+
+        # Group productions by their common prefixes
+        for production in productions:
+            prefix = ""
+            for i, symbol in enumerate(production):
+                prefix += symbol
+                if i < len(production)-1 and all(p.startswith(prefix) for p in productions):
+                    continue
+                else:
+                    # Found the longest common prefix
+                    common_prefixes.setdefault(prefix[:-1], []).append(production[i:])
+                    break
+
+
+        for prefix, suffixes in common_prefixes.items():
+            if len(suffixes) > 1:
+                # Create a new non-terminal for the common prefix
+                new_nonterminal = nonterminal + "'"
+                new_grammar[new_nonterminal] = suffixes
+                new_productions.append(prefix + new_nonterminal)
+            else:
+                new_productions.extend([prefix + suffix for suffix in suffixes])
+
+
+        new_grammar[nonterminal] = new_productions
+
+
+    return new_grammar
+
+
+# Example grammar
+grammar = {
+    'A': ['bE+acF', 'bE+F']
+}
+
+
+# Remove left factoring
+new_grammar = remove_left_factoring(grammar)
+
+
+# Print the updated grammar
+for nonterminal, productions in new_grammar.items():
+    print(f"{nonterminal} -> {' | '.join(productions)}")
+
+
+
+
+2. Consider the following Three address code and display Quadruples & Triples [10 marks] f=c+d 
+e=a-f 
+g=b*e 
+class Quadruple:
+    def __init__(self, op, arg1, arg2, result):
+        self.op = op
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.result = result
+
+
+class Triple:
+    def __init__(self, op, arg1, arg2, result):
+        self.op = op
+        self.arg1 = arg1
+        self.arg2 = arg2
+        self.result = result
+
+
+def generate_quadruples_and_triples(three_address_code):
+    quadruples = []
+    triples = []
+    res = []
+    for line in three_address_code:
+        parts = line.split()
+        res.append(parts[0])
+
+
+        if parts[-2] in ['+', '-', '*', '/']:
+            if len(parts) == 5:
+                quadruples.append(Quadruple(parts[-2], parts[2], parts[-1], parts[0]))
+                triples.append(Triple(parts[-2], parts[2], parts[-1], parts[0]))
+            else:
+                quadruples.append(Quadruple(parts[-2], parts[-1], '', parts[0]))
+                triples.append(Triple(parts[-2], parts[-1], '', parts[0]))
+        else:
+            quadruples.append(Quadruple(parts[1], parts[-1], '', parts[0]))
+            triples.append(Triple(parts[1], parts[-1], '', parts[0]))
+
+
+    return quadruples, triples, res
+
+
+def display_quadruples_table(quadruples):
+    print("{:<4} {:<6} {:<6} {:<6}".format("OP", "ARG1", "ARG2", "RESULT"))
+    for quad in quadruples:
+        print("{:<4} {:<6} {:<6} {:<6}".format(quad.op, quad.arg1, quad.arg2, quad.result))
+
+
+def display_triples_table(triples, res):
+    print("{:<6} {:<6} {:<6}".format("OP", "ARG1", "ARG2"))
+    for triple in triples:
+        arg1_str = '(' + str(res.index(triple.arg1)) + ')' if triple.arg1 in res else triple.arg1
+        arg2_str = '(' + str(res.index(triple.arg2)) + ')' if triple.arg2 in res else triple.arg2
+        print("{:<6} {:<6} {:<6}".format(triple.op, arg1_str, arg2_str))
+
+
+# Get user input for three-address code
+three_address_code = []
+n = int(input("Enter the number of statements: "))
+for _ in range(n):
+    print("Enter the 3AC statement: ")
+    three_address_code.append(input())
+
+
+# Generate quadruples and triples
+quadruples, triples, res = generate_quadruples_and_triples(three_address_code)
+
+
+# Display quadruples table
+print("\nQuadruples:")
+display_quadruples_table(quadruples)
+
+
+# Display triples table
+print("\nTriples:")
+display_triples_table(triples, res)
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. WAP to implement Two Pass Macro Processor for the following [15 marks] 
+MACRO 
+ADD &ARG1, &ARG2 
+L 1, &ARG1 
+A 1, &ARG2 
+MEND 
+MACRO 
+SUB &ARG3, &ARG4 
+L 1, &ARG3 
+S 1, &ARG4 
+MEND 
+ADD DATA1, DATA2 
+SUB DATA1, DATA2 
+DATA1 DC F’9’ 
+DATA2 DC F’5’ 
+END 
+import re
+
+
+# Direct input for simplicity
+input_code = """
+MACRO
+ADD &ARG1, &ARG2
+L 1, &ARG1
+A 1, &ARG2
+MEND
+
+
+MACRO
+SUB &ARG3, &ARG4
+L 1, &ARG3
+S 1, &ARG4
+MEND
+
+
+ADD DATA1, DATA2
+SUB DATA1, DATA2
+
+
+DATA1 DC F'9'
+DATA2 DC F'5'
+"""
+
+
+temp_input = input_code.split('\n')
+
+
+mdt = []
+ala = []
+mnt = {}
+mdt_copy = []
+
+
+# Pass 1: Parsing macros and preparing MNT, ALA, MDT
+append = False
+for line in temp_input:
+    if line == 'MACRO':
+        append = True
+        continue
+    if append:
+        mdt.append(re.split(r'[, ]+', line))
+        mdt_copy.append(re.split(r'[, ]+', line))
+    if line == "MEND":
+        append = False
+
+
+mdt_index = set()
+mdt_index.add(0)
+macro_names = []
+
+
+mnt[mdt[0][0]] = 0
+macro_names.append(mdt[0][0])
+
+
+for index, item in enumerate(mdt):
+    for i in item:
+        if i == "MEND" and index + 1 < len(mdt):
+            mdt_index.add(index + 1)
+            macro_names.append(mdt[index + 1][0])
+            mnt[mdt[index + 1][0]] = index + 1
+
+
+for macro_name in mnt:
+    for i in range(1, len(mdt[mnt[macro_name]])):
+        arg = mdt[mnt[macro_name]][i]
+        if arg.endswith('='):
+            arg = arg[:-1]
+        ala.append(arg)
+
+
+pass1_ala = ala
+
+
+for index, line in enumerate(mdt):
+    if index not in mdt_index:
+        for i in line:
+            if i in ala:
+                mdt[index][mdt[index].index(i)] = f',#{ala.index(i) + 1}'
+
+
+mdt_sentences = []
+for line in mdt:
+    mdt_sentences.append(' '.join(line))
+
+
+mnt_with_index = [(index, k, v + 1) for index, (k, v) in enumerate(mnt.items(), start=1)]
+
+
+print('\nPass 1')
+print('\nMNT:')
+for item in mnt_with_index:
+    print(item)
+
+
+print('\nALA:')
+for index, arg in enumerate(ala, start=1):
+    print(index, arg)
+
+
+print('\nMDT:')
+for index, sentence in enumerate(mdt_sentences, start=1):
+    print(index, sentence)
+
+
+# Pass 2: Macro expansion
+temp_input = [re.split(r'[, ]+', line) for line in temp_input]
+
+
+mend_loc = None
+for line_num, line in enumerate(temp_input):
+    for item_num, item in enumerate(line):
+        if item == 'MEND':
+            mend_loc = line_num
+
+
+ala = []
+for line in temp_input[mend_loc + 1:]:
+    for item_num, item in enumerate(line):
+        if item in macro_names:
+            next_items = line[item_num + 1:]
+            for next_item in next_items:
+                if '=' in next_item:
+                    next_item = next_item.split('=')[-1]
+                ala.append(next_item.strip())
+
+
+temp_ala = []
+for item in ala:
+    if '=' in item:
+        item = item.split("=")[-1]
+    if item not in temp_ala:
+        temp_ala.append(item)
+
+
+arg_data_map = {}
+
+
+for p1_ala, pass2_ala in zip(pass1_ala, ala):
+    arg_data_map[p1_ala] = pass2_ala
+
+
+for index in mdt_index:
+    for i, item in enumerate(mdt_copy[index]):
+        if '=' in item:
+            mdt_copy[index][i] = item.split('=')[0]
+
+
+for sublist in mdt_copy:
+    for index, item in enumerate(sublist):
+        if item in arg_data_map:
+            sublist[index] = arg_data_map[item]
+
+
+mdt_sentences_copy = []
+for line in mdt_copy:
+    mdt_sentences_copy.append(' '.join(line))
+
+
+print("\nPass 2")
+print("\nMDT:")
+for index, sentence in enumerate(mdt_sentences_copy, start=1):
+    print(index, sentence)
+
+
+print("\nALA:")
+for index, arg in enumerate(temp_ala, start=1):
+    print(index, arg)
+
+
+—----------------------------------------------------------------------------------------------------------------------- 
+—----------------------------------------------------------------------------------------------------------------------- 
+1. Write a program to display assembly / target code for the following 3AC statements [10 marks] 
+t = a - b 
+u = a - c 
+v = t + u 
+d = v + u 
+def generate_assembly(eq):
+    assembly_code = {}
+    registers = ['R0', 'R1', 'R2', 'R3']  # Available registers
+    reg_count = 0  # Register counter
+    regOps = {}
+
+
+    for line in eq:
+        parts = line.split('=')
+        lhs = parts[0].strip()
+        rhs = parts[1].strip()
+
+
+        assembly_code[line] = []
+
+
+        if '-' in rhs:
+            op1, op2 = rhs.split('-')
+            if op1 in regOps.values() and op2 in regOps.values():
+                key_op1 = next(key for key, value in regOps.items() if value == op1)
+                key_op2 = next(key for key, value in regOps.items() if value == op2)
+                assembly_code[line].append(f"SUB {key_op2},{key_op1}")
+                regOps[key_op1] = lhs
+            elif op1 in regOps.values():
+                key_op1 = next(key for key, value in regOps.items() if value == op1)
+                assembly_code[line].append(f"SUB {op2},{key_op1}")
+                regOps[key_op1] = lhs
+            else:
+                assembly_code[line].append(f"MOV {op1},{registers[reg_count]}")
+                assembly_code[line].append(f"SUB {op2},{registers[reg_count]}")
+                regOps[registers[reg_count]] = lhs
+        elif '+' in rhs:
+            op1, op2 = rhs.split('+')
+            if op1 in regOps.values() and op2 in regOps.values():
+                key_op1 = next(key for key, value in regOps.items() if value == op1)
+                key_op2 = next(key for key, value in regOps.items() if value == op2)
+                assembly_code[line].append(f"ADD {key_op2},{key_op1}")
+                regOps[key_op1] = lhs
+            elif op1 in regOps.values():
+                key_op1 = next(key for key, value in regOps.items() if value == op1)
+                assembly_code[line].append(f"ADD {op2},{key_op1}")
+                regOps[key_op1] = lhs
+            else:
+                assembly_code[line].append(f"MOV {op1},{registers[reg_count]}")
+                assembly_code[line].append(f"ADD {op2},{registers[reg_count]}")
+                regOps[registers[reg_count]] = lhs
+            
+        reg_count = (reg_count + 1) % len(registers)
+
+
+    return assembly_code
+
+
+def print_code_table(assembly):
+    print("Statements\t\t\t\t\tCode Generated")
+    print("--------------------------------------------")
+    for i, (key, value) in enumerate(assembly.items()):
+        if i == len(assembly) - 1:
+            for code in value:
+                print(f"{'':<40}\t{code}")
+            print(f"{key:<40}\tMOV R0,{key[0]}")
+        else:
+            print(f"{key:<40}\t{value[0]}")
+            for code in value[1:]:
+                print(f"{'':<40}\t{code}")
+        print("--------------------------------------------")
+    print("--------------------------------------------")
+
+
+equations = ["t=a-b", "u=a-c", "v=t+u", "d=v+u"]
+assembly = generate_assembly(equations)
+print_code_table(assembly)
+
+
+
+
+2. Write a program to create your own ‘C’ library using macros to print factors of any number [05 marks] 
+
+
+factor.h
+#define factor(n) do {\
+                                                        int i;\
+                            printf("Factors of %d are: ", n);\
+                            for (i = 1; i <= n; i++) {\
+                                if (n % i == 0) {\
+                                    printf("%d ", i);\
+                                }\
+                            }\
+                            printf("\n");\
+                        } while(0)
+spcc21.c
+#include<stdio.h>
+#include "factor.h"
+
+
+int main() {
+    int num;
+    printf("Enter a number: ");
+    scanf(", %d", &num);
+    factor(num);
+    return 0;
+}
+
+
+—-----------------------------------------------------------------------------------------------------------------------
+—-----------------------------------------------------------------------------------------------------------------------
