@@ -1,0 +1,586 @@
+#A* Search Algorithm
+class Node:
+
+    def __init__(self, level, f_score,state):
+        self.data = state
+        self.level = level
+        self.f_score = f_score
+
+    def find_zero_tile(self):
+        zero_tile_position = []
+        for i in range(0, 3):
+            for j in range(0, 3):
+                if self.data[i][j] == 0:
+                    zero_tile_position.extend([i, j])
+
+                    return zero_tile_position
+
+    def possible_moves(self):
+        moves = [
+            [-1, 0],
+            [1, 0],
+            [0, -1],
+            [0, 1]
+        ]
+        zero_tile = self.find_zero_tile()
+        permissible_moves = []
+        for move in moves:
+            if (0<= move[0]+zero_tile[0] < 3) and (0<= move[1]+zero_tile[1] < 3):
+                permissible_moves.append(move)
+
+        return permissible_moves
+
+    def generate_nodes(self):
+        moves = self.possible_moves()
+        children_nodes:list[Node] = []
+        zero_row, zero_col = self.find_zero_tile()
+        for move in  moves:
+            temporary_data = [row_elements[:] for row_elements in self.data]
+            row_move = 1*move[0] + zero_row
+            col_move = 1*move[1] + zero_col
+            temporary_data[zero_row][zero_col] = temporary_data[row_move][col_move]
+            temporary_data[row_move][col_move] = 0
+            children_node = Node(level=self.level + 1, f_score=0, state=temporary_data)
+            children_nodes.append(children_node)
+
+        return children_nodes
+
+class Puzzle:
+
+    def __init__(self):
+        self.explored:list[Node] = []
+        self.unexplored:list[Node] = []
+    def h(self, current_state, end_state):
+        misplaced_tiles = 0
+        for i in range(0, 3):
+            for j in range(0, 3):
+                if current_state[i][j] != end_state[i][j] and current_state[i][j] != 0:
+                    misplaced_tiles += 1
+
+        return misplaced_tiles
+
+    def f(self, current_state, end_state):
+        # f(n) = h(n) + g(n)
+        return self.h(current_state.data, end_state.data) + current_state.level
+
+    def check_explored_list(self, node: Node):
+        for explored_node in self.explored:
+            if all(row1 == row2 for row1, row2 in zip(explored_node.data, node.data)):
+                return True
+        return False
+
+
+    def a_star_search(self, start_node:Node, end_node:Node):
+        start_node.f_score = self.f(start_node, end_node)
+
+        self.unexplored.append(start_node)
+        print("------------------------------")
+        while self.unexplored:
+            current_node:Node = self.unexplored[0]
+            heuristic_func = self.h(current_node.data, end_node.data)
+
+            for row in current_node.data:
+                print(*row)
+
+            print(f"f(n) = g(n) + h(n) = {current_node.level} + {heuristic_func} = {current_node.f_score}")
+
+            if heuristic_func == 0:
+                print("\nGOAL STATE REACHED!!")
+                print("-x-x-x-x-x-x-x-x-x-x-x-x-x-x-")
+                return
+            else:
+                print("------------------------------")
+
+            for node in current_node.generate_nodes():
+                if not self.check_explored_list(node):
+                    node.f_score = self.f(node, end_node)
+                    self.unexplored.append(node)
+
+            self.explored.append(current_node)
+            self.unexplored.pop(0)
+
+            self.unexplored.sort(key = lambda x: x.f_score, reverse=False)
+
+        print("Goal State cannot be reached")
+
+
+if __name__ == "__main__":
+    print("Enter the Initial State: ")
+
+    initial_state = []
+    for i in range(0, 3):
+        row = list(map(int, input().split()))
+        initial_state.append(row)
+    initial_node = Node(0, 0, initial_state)
+
+    goal_state = []
+    print("Now, enter the Goal State: ")
+    for i in range(0, 3):
+        row = list(map(int, input().split()))
+        goal_state.append(row)
+    goal_node = Node(0, 0, goal_state)
+
+    eight_block_problem  = Puzzle()
+    eight_block_problem.a_star_search(initial_node, goal_node)
+# TIC TAC TOE GAME ///adversial learning
+import math
+import random
+
+# Function to print the Tic Tac Toe board
+def print_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 5)
+
+# Function to check if a player has won
+def check_win(board, player):
+    for row in board:
+        if all(cell == player for cell in row):
+            return True
+    for col in range(3):
+        if all(board[row][col] == player for row in range(3)):
+            return True
+    if all(board[i][i] == player for i in range(3)) or all(board[i][2 - i] == player for i in range(3)):
+        return True
+    return False
+
+# Function to check if the board is full
+def is_board_full(board):
+    return all(cell != " " for row in board for cell in row)
+
+# Function to get the AI's move using Minimax algorithm with randomness
+def get_ai_move(board, depth, is_maximizing, randomness_prob):
+    if check_win(board, "O"):
+        return 10
+    elif check_win(board, "X"):
+        return -10
+    elif is_board_full(board):
+        return 0
+    
+    if is_maximizing:
+        best_score = -math.inf
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == " ":
+                    board[i][j] = "O"
+                    score = get_ai_move(board, depth + 1, False, randomness_prob)
+                    board[i][j] = " "
+                    best_score = max(score, best_score)
+        return best_score
+    else:
+        if random.random() < randomness_prob:
+            return random.choice([-10, 0])  # Randomly select a suboptimal move
+        else:
+            best_score = math.inf
+            for i in range(3):
+                for j in range(3):
+                    if board[i][j] == " ":
+                        board[i][j] = "X"
+                        score = get_ai_move(board, depth + 1, True, randomness_prob)
+                        board[i][j] = " "
+                        best_score = min(score, best_score)
+            return best_score
+
+# Function to make the AI's move
+def make_ai_move(board, randomness_prob):
+    best_score = -math.inf
+    best_move = None
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == " ":
+                board[i][j] = "O"
+                score = get_ai_move(board, 0, False, randomness_prob)
+                board[i][j] = " "
+                if score > best_score:
+                    best_score = score
+                    best_move = (i, j)
+    return best_move
+
+# Function to play the game
+def play_game(randomness_prob):
+    board = [[" " for _ in range(3)] for _ in range(3)]
+    print("Let's play Tic Tac Toe!\n")
+    print_board(board)
+
+    while True:
+        # Player's move
+        while True:
+            row, col = map(int, input("Enter your move (row col): ").split())
+            if board[row][col] == " ":
+                board[row][col] = "X"
+                break
+            else:
+                print("Invalid move. Try again.")
+
+        print_board(board)
+
+        # Check if player wins
+        if check_win(board, "X"):
+            print("Congratulations! You win!")
+            break
+
+        # Check for a draw
+        if is_board_full(board):
+            print("It's a draw!")
+            break
+
+        # AI's move
+        print("AI's move:")
+        ai_row, ai_col = make_ai_move(board, randomness_prob)
+        board[ai_row][ai_col] = "O"
+        print_board(board)
+
+        # Check if AI wins
+        if check_win(board, "O"):
+            print("AI wins!")
+            break
+
+        # Check for a draw
+        if is_board_full(board):
+            print("It's a draw!")
+            break
+
+# Main function to start the game
+if __name__ == "__main__":
+    randomness_prob = 0.2  # Probability of AI making a suboptimal move (adjust as needed)
+    play_game(randomness_prob)
+#bayes levels
+def main():
+    l = int(input("Please enter the total number of levels in your network: "))
+    level = {}
+    dependency = {}
+    for i in range(l):
+        level[i] = input(f"Enter nodes at level {i}: ").strip().split()
+        if i != 0:
+            for j in level[i]:
+                dependency[j] = [x for x in level[i - 1]]
+        else:
+            for j in level[i]:
+                dependency[j] = []
+    probability = {}
+    event = {}
+    for key, value in dependency.items():
+        event[key] = False
+        if len(value) == 0:
+            while True:
+                try:
+                    prob = float(input(f"Enter the probability of {key} being true: ").strip())
+                    if 0 <= prob <= 1:
+                        probability[key] = prob
+                        break
+                    else:
+                        print("Probability must be between 0 and 1.")
+                except ValueError:
+                    print("Invalid input. Please enter a valid probability.")
+        elif len(value) == 1:
+            while True:
+                try:
+                    print(f"Enter probabilities for {dependency[key]} being true or false when {key} is true:")
+                    prob_list = list(map(float, input().strip().split()))
+                    if all(0 <= prob <= 1 for prob in prob_list):
+                        probability[key] = prob_list
+                        break
+                    else:
+                        print("Probabilities must be between 0 and 1.")
+                except ValueError:
+                    print("Invalid input. Please enter valid probabilities.")
+        elif len(value) == 2:
+            while True:
+                try:
+                    print(f'Enter probabilities for {dependency[key]} combinations when {key} is true:')
+                    prob_list = list(map(float, input().strip().split()))
+                    if len(prob_list) == 4 and all(0 <= prob <= 1 for prob in prob_list):
+                        probability[key] = prob_list
+                        break
+                    else:
+                        print("Four probabilities must be provided, each between 0 and 1.")
+                except ValueError:
+                    print("Invalid input. Please enter valid probabilities.")
+
+    while True:
+        print("\n--------------------------------------------------")
+        print("\nEnter event values: (True/False)")
+        for i in event:
+            event[i] = input(f'{i}: ').strip().lower() == "true"
+        cal = {}
+        for key, value in dependency.items():
+            if len(value) == 0:
+                if event[key]:
+                    cal[key] = round(probability[key], 3)
+                else:
+                    cal[key] = round(1.0 - probability[key], 3)
+            elif len(value) == 1:
+                if event[key] and event[value[0]]:
+                    cal[key] = round(probability[key][0], 3)
+                elif event[key] and not event[value[0]]:
+                    cal[key] = round(probability[key][1], 3)
+                elif not event[key] and event[value[0]]:
+                    cal[key] = round(1.0 - probability[key][0], 3)
+                elif not event[key] and not event[value[0]]:
+                    cal[key] = round(1.0 - probability[key][1], 3)
+            elif len(value) == 2:
+                if event[key] and event[value[0]] and event[value[1]]:
+                    cal[key] = round(probability[key][0], 3)
+                elif event[key] and event[value[0]] and not event[value[1]]:
+                    cal[key] = round(probability[key][1], 3)
+                elif event[key] and not event[value[0]] and event[value[1]]:
+                    cal[key] = round(probability[key][2], 3)
+                elif event[key] and not event[value[0]] and not event[value[1]]:
+                    cal[key] = round(probability[key][3], 3)
+                elif not event[key] and event[value[0]] and event[value[1]]:
+                    cal[key] = round(1.0 - probability[key][0], 3)
+                elif not event[key] and event[value[0]] and not event[value[1]]:
+                    cal[key] = round(1.0 - probability[key][1], 3)
+                elif not event[key] and not event[value[0]] and event[value[1]]:
+                    cal[key] = round(1.0 - probability[key][2], 3)
+                elif not event[key] and not event[value[0]] and not event[value[1]]:
+                    cal[key] = round(1.0 - probability[key][3], 3)
+
+        print("Calculated Probabilities:", cal)
+        solution = 1.0
+        for val in cal.values():
+            solution *= val
+        print(f"The probability for the given scenario is: {solution:.10f}")
+        print("\n--------------------------------------------------")
+        stop = input("Do you want to stop? (y/n) : ").strip().lower() == "y"
+        if stop:
+            break
+
+main()
+#Bayes
+def E_prob(E):
+    return probability["E_T"] if E == 1 else probability["E_F"]
+
+def B_prob(B):
+    return probability["B_T"] if B == 1 else probability["B_F"]
+
+def A_prob(E, B, A):
+    if E == 1 and B == 1:
+        return probability["ABE_T"] if A == 1 else probability["ABE_F"]
+    elif E == 1 and B == 0:
+        return probability["AE_T"] if A == 1 else probability["AE_F"]
+    elif E == 0 and B == 1:
+        return probability["AB_T"] if A == 1 else probability["AB_F"]
+    else:
+        return probability["A_T"] if A == 1 else probability["A_F"]
+
+def J_prob(J, A):
+    return probability["JA_T"] if J == 1 and A == 1 else probability["JA_F"] if J == 1 else probability["J_T"] if A == 1 else probability["J_F"]
+
+def M_prob(M, A):
+    return probability["MA_T"] if M == 1 and A == 1 else probability["MA_F"] if M == 1 else probability["M_T"] if A == 1 else probability["M_F"]
+
+def get_probability(prompt):
+    while True:
+        try:
+            probability = float(input(prompt))
+            if 0 <= probability <= 1:
+                return probability
+            else:
+                print("Probability must be a value between 0 and 1.")
+        except ValueError:
+            print("Invalid input. Please enter a valid probability.")
+probability = {}
+
+probability["B_T"] = get_probability("Enter the probability of Burglary (True): ")
+probability["B_F"] = 1 - probability["B_T"]
+
+probability["E_T"] = get_probability("Enter the probability of Earthquake (True): ")
+probability["E_F"] = 1 - probability["E_T"]
+
+probability["ABE_T"] = get_probability("Enter the probability of Alarm given Burglary and Earthquake (True): ")
+probability["ABE_F"] = 1 - probability["ABE_T"]
+
+probability["AB_T"] = get_probability("Enter the probability of Alarm given Burglary (True): ")
+probability["AB_F"] = 1 - probability["AB_T"]
+
+probability["AE_T"] = get_probability("Enter the probability of Alarm given Earthquake (True): ")
+probability["AE_F"] = 1 - probability["AE_T"]
+
+probability["A_T"] = get_probability("Enter the probability of Alarm (True): ")
+probability["A_F"] = 1 - probability["A_T"]
+
+probability["JA_T"] = get_probability("Enter the probability of John calling given Alarm (True): ")
+probability["JA_F"] = 1 - probability["JA_T"]
+
+probability["J_T"] = get_probability("Enter the probability of John calling (True): ")
+probability["J_F"] = 1 - probability["J_T"]
+
+probability["MA_T"] = get_probability("Enter the probability of Mary calling given Alarm (True): ")
+probability["MA_F"] = 1 - probability["MA_T"]
+
+probability["M_T"] = get_probability("Enter the probability of Mary calling (True): ")
+probability["M_F"] = 1 - probability["M_T"]
+
+while True:
+    iE = int(input("Enter if Earthquake happened (yes = 1, no = 0): "))
+    iB = int(input("Enter if Burglary happened (yes = 1, no = 0): "))
+    iA = int(input("Enter if alarm was raised (yes = 1, no = 0): "))
+    iJ = int(input("Enter if John called (yes = 1, no = 0): "))
+    iM = int(input("Enter if Mary called (yes = 1, no = 0): "))
+    PE = E_prob(iE)
+    PB = B_prob(iB)
+    PA = A_prob(iE, iB, iA)
+    PJ = J_prob(iJ, iA)
+    PM = M_prob(iM, iA)
+    P = PE * PB * PA * PJ * PM
+    print("\nLevel of events:")
+    print("1. Earthquake: ", PE)
+    print("2. Burglary: ", PB)
+    print("3. Alarm: ", PA)
+    print("4. John's Call: ", PJ)
+    print("5. Mary's Call: ", PM)
+    print("Probability is {:.10f}".format(P))
+    
+    choice = input("\nDo you want to calculate again? (yes = 1, no = 0): \n")
+    if choice != "1":
+        break
+
+# Function to perform Breadth First Search (BFS)
+def bfs(graph, start, goal):
+    visited = []
+    queue = []
+    visited.append(start)
+    queue.append(start)
+
+    while queue:
+        s = queue.pop(0) 
+        print(s, end=" ")
+        if s == goal:
+            break
+        for neighbour in graph[s]:
+            if neighbour not in visited:
+                visited.append(neighbour)
+                queue.append(neighbour)
+
+# Function to perform Depth First Search (DFS)
+def dfs(graph, start, goal, visited=None):
+    if visited is None:
+        visited = set()
+    if start not in visited:
+        print(start)
+        if start == goal:
+            breakpoint()
+        visited.add(start) 
+
+        for neighbour in graph[start]:
+            dfs(graph, neighbour, goal, visited)
+
+# Taking input from the user
+num_nodes = int(input("Enter the number of nodes: "))
+
+graph = {}
+for i in range(num_nodes):
+    node = input(f"Enter node {i + 1}: ")
+    connections = input(f"Enter connections for node {node}: ").split()
+    graph[node] = connections
+
+start_node = input("Enter the start node: ")
+goal_node = input("Enter the goal node: ")
+
+print("BFS traversal:")
+bfs(graph, start_node, goal_node)
+
+print("\nDFS traversal:")
+dfs(graph, start_node, goal_node)
+#Vaccum Cleaner
+def clean(floor):
+    i, j, row, col = 0, 0, len(floor), len(floor[0])
+    for i in range(row):
+        if i % 2 == 0:
+            for j in range(col):
+                if floor[i][j] == 1:
+                    floor[i][j] = 0
+                    print_F(floor, i, j, "SUCK")
+                    # Check if there is still dirt
+                    if j < col - 1:
+                        print_F(floor, i, j + 1, "MOVE RIGHT")
+                else:
+                    print_F(floor, i, j, "MOVE RIGHT")
+        else:
+            for j in range(col - 1, -1, -1):
+                if floor[i][j] == 1:
+                    floor[i][j] = 0
+                    print_F(floor, i, j, "SUCK")
+                    # Check if there is still dirt
+                    if j > 0:
+                        print_F(floor, i, j - 1, "MOVE LEFT")
+                else:
+                    print_F(floor, i, j, "MOVE LEFT")
+
+
+def print_F(floor, row, col, action):
+    print("The Floor matrix is as below:")
+    for r in range(len(floor)):
+        for c in range(len(floor[r])):
+            if r == row and c == col:
+                print(f" >{floor[r][c]}< ", end='')
+            else:
+                print(f"  {floor[r][c]}  ", end='')
+        print(end='\n')
+    print("Action taken:", action)
+    print(end='\n')
+
+
+def main():
+    floor = []
+    m = int(input("Enter the No. of Rows: "))
+    n = int(input("Enter the No. of Columns: "))
+    print("Enter clean status for each cell (1 - dirty, 0 - clean)")
+    for i in range(m):
+        f = list(map(int, input().split(" ")))
+        floor.append(f)
+    print()
+    clean(floor)
+
+
+main()
+
+#Prolong 
+
+father(alex, tim).  % you & father
+father(george, tim).  % sibling & father
+father(tim, matt).  % father and his father
+father(mike, matt).  %  paternal uncle and his father
+father(alice, luke).  % mother and her father
+father(roberta, luke).  % maternal aunt and her father
+father(henry, isaac).  % maternal cousin and his father
+father(megh, mike).  % paternal counsin and his father
+
+mother(alex, alice).  % you & mother
+mother(george, alice).  % sibling & mother
+mother(tim, emily).  % father and his mother
+mother(mike, emily).  % paternal uncle and his mother
+mother(alice, julia).  % mother and her mother
+mother(roberta, lily).  % maternal aunt and her mother
+mother(henry, roberta).  % maternal cousin and his mother
+mother(megh, rose).  % paternal counsin and his mother
+
+female(alice). 
+female(roberta). 
+female(megh). 
+female(emily). 
+female(julia). 
+female(lily). 
+female(rose). 
+
+male(tim). 
+male(alex). 
+male(george). 
+male(matt). 
+male(mike). 
+male(luke). 
+male(henry). 
+male(issac).
+
+parent(Z, X, Y) :- father(Z, X), mother(Z, Y).
+sibling(X, Y) :- parent(X, Z, _), parent(Y, Z, _), X \= Y.
+brother(X, Y) :- sibling(X, Y), male(Y).
+sister(X, Y) :- sibling(X, Y), female(Y).
+uncle(X, Y) :- brother(Z, Y),(parent(X, Z, _); parent(X, _, Z)).
+aunt(X, Y) :- sister(Z, Y), (parent(X, Z, _); parent(X, _, Z)).
+grandfather(X, Y) :- father(Z, Y), (parent(X, Z, _); parent(X, _, Z)).
+grandmother(X, Y) :- mother(Z, Y), (parent(X, Z, _); parent(X, _, Z)).
+cousin(X, Y) :- (parent(X, Z, _); parent(X, _, Z)), sibling(W, Z), (parent(Y, W, _);parent(Y, _, W)).
+
+%run it as parent(alex,A,B). 
