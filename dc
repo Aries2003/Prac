@@ -1,0 +1,239 @@
+RMI
+
+ICalculator.java
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+public interface ICalculator extends Remote {
+    int add(int a, int b) throws RemoteException;
+    int subtract(int a, int b) throws RemoteException;
+    int multiply(int a, int b) throws RemoteException;
+    int divide(int a, int b) throws RemoteException;
+}
+
+Calculator.java
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class Calculator extends UnicastRemoteObject implements ICalculator {
+    protected Calculator() throws RemoteException {
+        super();
+    }
+
+    @Override
+    public int add(int a, int b) throws RemoteException {
+        return a + b;
+    }
+
+    @Override
+    public int subtract(int a, int b) throws RemoteException {
+        return a - b;
+    }
+
+    @Override
+    public int multiply(int a, int b) throws RemoteException {
+        return a * b;
+    }
+
+    @Override
+    public int divide(int a, int b) throws RemoteException {
+        if (b == 0) throw new ArithmeticException("Division by zero!");
+        return a / b;
+    }
+}
+
+
+
+CalculatorServer.java
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.Naming;
+
+public class CalculatorServer {
+    public static void main(String[] args) {
+        try {
+            Calculator calculator = new Calculator();
+
+            Registry registry = LocateRegistry.createRegistry(1099);
+
+            Naming.rebind("CalculatorService", calculator);
+
+            System.out.println("Calculator Server is ready.");
+        } catch (Exception e) {
+            System.err.println("Server exception: " + e.toString());
+            e.printStackTrace();
+        }
+    }
+}
+
+CalculatorClient.java
+import java.rmi.Naming;
+
+public class CalculatorClient {
+    public static void main(String[] args) {
+        try {
+            String serverHostname = args.length > 0 ? args[0] : "localhost";
+
+            ICalculator calculator = (ICalculator) Naming.lookup("rmi://" + serverHostname + "/CalculatorService");
+
+            System.out.println("Addition: " + calculator.add(10, 5));
+            System.out.println("Subtraction: " + calculator.subtract(10, 5));
+            System.out.println("Multiplication: " + calculator.multiply(10, 5));
+            System.out.println("Division: " + calculator.divide(10, 5));
+        } catch (Exception e) {
+            System.err.println("Client exception: " + e.toString());
+            e.printStackTrace();
+        }
+    }
+}
+
+Steps
+Javac *.java
+Java CS
+Javac *.java
+Java CC localhost
+
+RPC
+
+CalculatorRequest.java
+import java.io.Serializable;
+
+public class CalculatorRequest implements Serializable {
+    private static final long serialVersionUID = 1L;  // It's good practice to add a serial version ID
+    private int num1;
+    private int num2;
+    private String operation;
+
+    public CalculatorRequest(int num1, int num2, String operation) {
+        this.num1 = num1;
+        this.num2 = num2;
+        this.operation = operation;
+    }
+
+    public int getNum1() {
+        return num1;
+    }
+
+    public void setNum1(int num1) {
+        this.num1 = num1;
+    }
+
+    public int getNum2() {
+        return num2;
+    }
+
+    public void setNum2(int num2) {
+        this.num2 = num2;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
+}
+
+CalculatorServer.java
+import java.io.*;
+import java.net.*;
+
+public class CalculatorServer {
+    public static void main(String[] args) {
+        ServerSocket serverSocket = null;
+        Socket clientSocket = null;
+        ObjectInputStream ois = null;
+        ObjectOutputStream oos = null;
+
+        try {
+            serverSocket = new ServerSocket(5000);
+            System.out.println("Server is waiting for client...");
+
+            clientSocket = serverSocket.accept();
+            System.out.println("Client connected!");
+
+            ois = new ObjectInputStream(clientSocket.getInputStream());
+            oos = new ObjectOutputStream(clientSocket.getOutputStream());
+
+            CalculatorRequest request = (CalculatorRequest) ois.readObject();
+
+            int result = 0;
+            switch (request.getOperation()) {
+                case "add":
+                    result = request.getNum1() + request.getNum2();
+                    break;
+                case "subtract":
+                    result = request.getNum1() - request.getNum2();
+                    break;
+                case "multiply":
+                    result = request.getNum1() * request.getNum2();
+                    break;
+                case "divide":
+                    result = request.getNum1() / request.getNum2();
+                    break;
+                default:
+                    System.err.println("Invalid operation");
+            }
+
+            oos.writeInt(result);
+            oos.flush();
+
+        } catch (IOException | ClassNotFoundException ex) {
+            System.err.println("Error: " + ex.getMessage());
+        } finally {
+            try {
+                if (ois != null) ois.close();
+                if (oos != null) oos.close();
+                if (clientSocket != null) clientSocket.close();
+                if (serverSocket != null) serverSocket.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+}
+
+CalculatorClient.java
+import java.io.*;
+import java.net.*;
+
+public class CalculatorClient {
+    public static void main(String[] args) {
+        Socket socket = null;
+        ObjectOutputStream oos = null;
+        ObjectInputStream ois = null;
+       
+        try {
+            socket = new Socket("localhost", 5000);
+
+            oos = new ObjectOutputStream(socket.getOutputStream());
+            ois = new ObjectInputStream(socket.getInputStream());
+
+            CalculatorRequest request = new CalculatorRequest(10, 5, "add");
+
+            oos.writeObject(request);
+            oos.flush();
+
+            int result = ois.readInt();
+            System.out.println("Result from server: " + result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ois != null) ois.close();
+                if (oos != null) oos.close();
+                if (socket != null) socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+Steps RPC
+
+Javac *.java 
+Java CS
+Javac *.java
+Java CC
