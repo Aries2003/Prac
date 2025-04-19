@@ -89,9 +89,9 @@ public class CalculatorClient {
 
 Steps
 Javac *.java
-Java CS
+Java CalculatorServer
 Javac *.java
-Java CC localhost
+Java CalculatorClient localhost
 
 RPC
 
@@ -234,6 +234,6 @@ public class CalculatorClient {
 Steps RPC
 
 Javac *.java 
-Java CS
+Java CalculatorServer
 Javac *.java
-Java CC
+Java CalculatorClient
