@@ -1,8 +1,179 @@
-RMI
-
+EXP 1: 
+(i) One server to one client (Same device) 
+Server.java 
+import java.io.*; 
+import java.net.*; 
+public class Server { 
+public static void main(String[] args) { 
+try { 
+ServerSocket serverSocket = new ServerSocket(5000); 
+System.out.println("Server is waiting for client..."); 
+Socket socket = serverSocket.accept(); 
+System.out.println("Client connected."); 
+BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream())); PrintWriter output = new PrintWriter(socket.getOutputStream(), true); 
+String message = input.readLine(); 
+System.out.println("Client: " + message); 
+output.println("Hello from Server"); 
+socket.close(); 
+serverSocket.close(); 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
+}
+Client.java 
+import java.io.*; 
+import java.net.*; 
+public class Client { 
+public static void main(String[] args) { 
+try { 
+Socket socket = new Socket("localhost", 5000); 
+BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream())); PrintWriter output = new PrintWriter(socket.getOutputStream(), true); 
+output.println("Hello from Client"); 
+String message = input.readLine(); 
+System.out.println("Server: " + message); 
+socket.close(); 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
+} 
+(ii) One server to one client (Different devices) 
+Server.java 
+import java.io.*; 
+import java.net.*; 
+public class Server { 
+public static void main(String[] args) { 
+try { 
+ServerSocket serverSocket = new ServerSocket(5000);
+System.out.println("Server is waiting for client..."); 
+Socket socket = serverSocket.accept(); 
+System.out.println("Client connected."); 
+BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream())); PrintWriter output = new PrintWriter(socket.getOutputStream(), true); 
+String message = input.readLine(); 
+System.out.println("Client: " + message); 
+output.println("Hello from Server"); 
+socket.close(); 
+serverSocket.close(); 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
+} 
+Client.java 
+import java.io.*; 
+import java.net.*; 
+public class Client { 
+public static void main(String[] args) { 
+try { 
+Socket socket = new Socket("192.168.1.5", 5000); 
+BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream())); PrintWriter output = new PrintWriter(socket.getOutputStream(), true); 
+output.println("Hello from Client");
+String message = input.readLine(); 
+System.out.println("Server: " + message); 
+socket.close(); 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
+} 
+(iii) One server to multiple clients (Different devices) 
+Server.java 
+import java.io.*; 
+import java.net.*; 
+public class Server { 
+public static void main(String[] args) { 
+try { 
+ServerSocket serverSocket = new ServerSocket(5000); System.out.println("Server is waiting for clients..."); while (true) { 
+Socket socket = serverSocket.accept(); 
+System.out.println("Client connected."); 
+new ClientHandler(socket).start(); 
+} 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
+}
+class ClientHandler extends Thread { 
+private Socket socket; 
+public ClientHandler(Socket socket) { 
+this.socket = socket; 
+} 
+public void run() { 
+try { 
+BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream())); PrintWriter output = new PrintWriter(socket.getOutputStream(), true); 
+String message = input.readLine(); 
+System.out.println("Client: " + message); 
+output.println("Hello from Server"); 
+socket.close(); 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
+} 
+Client.java 
+import java.io.*; 
+import java.net.*; 
+public class Client { 
+public static void main(String[] args) { 
+try { 
+Socket socket = new Socket("192.168.1.5", 5000);
+BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream())); PrintWriter output = new PrintWriter(socket.getOutputStream(), true); 
+output.println("Hello from Client"); 
+String message = input.readLine(); 
+System.out.println("Server: " + message); 
+socket.close(); 
+} catch (Exception e) { 
+e.printStackTrace(); 
+} 
+} 
+} 
+EXP 2: 
+(i) RPC-based Calculator in Java (with User Input) 
+Server.java 
+import java.io.*; 
+import java.net.*; 
+public class Server { 
+public static void main(String[] args) throws Exception { 
+ServerSocket ss = new ServerSocket(5000); 
+Socket s = ss.accept(); 
+BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream())); PrintWriter out = new PrintWriter(s.getOutputStream(), true); 
+String[] data = in.readLine().split(" "); 
+int a = Integer.parseInt(data[0]), b = Integer.parseInt(data[1]); 
+switch (data[2]) { 
+case "+": out.println(a + b); break; 
+case "-": out.println(a - b); break;
+case "*": out.println(a * b); break; 
+case "/": out.println(b != 0 ? a / b : "Error"); break; 
+default: out.println("Invalid Operator"); 
+} 
+s.close(); ss.close(); 
+} 
+} 
+Client.java 
+import java.io.*; 
+import java.net.*; 
+public class Client { 
+public static void main(String[] args) throws Exception { 
+Socket s = new Socket("localhost", 5000); 
+BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream())); PrintWriter out = new PrintWriter(s.getOutputStream(), true); 
+BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in)); 
+System.out.print("Enter first number: "); 
+int a = Integer.parseInt(userInput.readLine()); 
+System.out.print("Enter second number: "); 
+int b = Integer.parseInt(userInput.readLine()); 
+System.out.print("Enter operator (+, -, *, /): "); 
+String op = userInput.readLine(); 
+out.println(a + " " + b + " " + op); 
+System.out.println("Result: " + in.readLine()); 
+s.close(); 
+} 
+}
+(ii) RMI-based Calculator in Java (with User Input) 
 ICalculator.java
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+
 
 public interface ICalculator extends Remote {
     int add(int a, int b) throws RemoteException;
@@ -10,30 +181,34 @@ public interface ICalculator extends Remote {
     int multiply(int a, int b) throws RemoteException;
     int divide(int a, int b) throws RemoteException;
 }
-
 Calculator.java
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+
 
 public class Calculator extends UnicastRemoteObject implements ICalculator {
     protected Calculator() throws RemoteException {
         super();
     }
 
+
     @Override
     public int add(int a, int b) throws RemoteException {
         return a + b;
     }
+
 
     @Override
     public int subtract(int a, int b) throws RemoteException {
         return a - b;
     }
 
+
     @Override
     public int multiply(int a, int b) throws RemoteException {
         return a * b;
     }
+
 
     @Override
     public int divide(int a, int b) throws RemoteException {
@@ -41,22 +216,23 @@ public class Calculator extends UnicastRemoteObject implements ICalculator {
         return a / b;
     }
 }
-
-
-
 CalculatorServer.java
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.Naming;
+
 
 public class CalculatorServer {
     public static void main(String[] args) {
         try {
             Calculator calculator = new Calculator();
 
+
             Registry registry = LocateRegistry.createRegistry(1099);
 
+
             Naming.rebind("CalculatorService", calculator);
+
 
             System.out.println("Calculator Server is ready.");
         } catch (Exception e) {
@@ -65,16 +241,18 @@ public class CalculatorServer {
         }
     }
 }
-
 CalculatorClient.java
 import java.rmi.Naming;
+
 
 public class CalculatorClient {
     public static void main(String[] args) {
         try {
             String serverHostname = args.length > 0 ? args[0] : "localhost";
 
+
             ICalculator calculator = (ICalculator) Naming.lookup("rmi://" + serverHostname + "/CalculatorService");
+
 
             System.out.println("Addition: " + calculator.add(10, 5));
             System.out.println("Subtraction: " + calculator.subtract(10, 5));
@@ -86,154 +264,206 @@ public class CalculatorClient {
         }
     }
 }
-
-Steps
-Javac *.java
-Java CalculatorServer
-Javac *.java
-Java CalculatorClient localhost
-
-RPC
-
-CalculatorRequest.java
-import java.io.Serializable;
-
-public class CalculatorRequest implements Serializable {
-    private static final long serialVersionUID = 1L;  // It's good practice to add a serial version ID
-    private int num1;
-    private int num2;
-    private String operation;
-
-    public CalculatorRequest(int num1, int num2, String operation) {
-        this.num1 = num1;
-        this.num2 = num2;
-        this.operation = operation;
-    }
-
-    public int getNum1() {
-        return num1;
-    }
-
-    public void setNum1(int num1) {
-        this.num1 = num1;
-    }
-
-    public int getNum2() {
-        return num2;
-    }
-
-    public void setNum2(int num2) {
-        this.num2 = num2;
-    }
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
-    }
+EXP 3: 
+1. Hello.idl 
+interface Hello { 
+string sayHello(); 
+}; 
+2. Generate Stubs 
+idlj -fall Hello.idl 
+3. HelloImpl.java 
+import HelloApp.*; 
+import org.omg.CORBA.*; 
+import org.omg.PortableServer.*; 
+public class HelloImpl extends HelloPOA { 
+public String sayHello() { 
+return "Hello from Server!"; 
+} 
+} 
+4. Server.java 
+import HelloApp.*; 
+import org.omg.CORBA.*; 
+import org.omg.PortableServer.*; 
+public class Server { 
+public static void main(String[] args) throws Exception { 
+ORB orb = ORB.init(args, null); 
+POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA")); HelloImpl hello = new HelloImpl(); 
+rootPOA.activate_object(hello); 
+System.out.println("Server is running...");
+orb.run(); 
+} 
+} 
+5. Client.java 
+import HelloApp.*; 
+import org.omg.CORBA.*; 
+public class Client { 
+public static void main(String[] args) throws Exception { ORB orb = ORB.init(args, null); 
+org.omg.CORBA.Object obj = orb.string_to_object("IOR:..."); Hello hello = HelloHelper.narrow(obj); 
+System.out.println(hello.sayHello()); 
+} 
+} 
+EXP 4: 
+1. Server.java 
+import java.io.*; 
+import java.net.*; 
+import java.util.*; 
+public class Server { 
+static Set<PrintWriter> clients = new HashSet<>(); 
+public static void main(String[] args) throws Exception { Scanner sc = new Scanner(System.in); 
+System.out.print("Enter number of clients: "); 
+int numClients = sc.nextInt(); 
+ServerSocket ss = new ServerSocket(5000);
+System.out.println("Server started..."); 
+while (clients.size() < numClients) { 
+Socket s = ss.accept(); 
+PrintWriter out = new PrintWriter(s.getOutputStream(), true); 
+clients.add(out); 
+new Thread(() -> { 
+try (BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()))) { String msg; 
+while ((msg = in.readLine()) != null) 
+for (PrintWriter client : clients) client.println(msg); 
+} catch (Exception e) { clients.remove(out); } 
+}).start(); 
+System.out.println("Client connected. Total clients: " + clients.size()); 
+} 
+System.out.println("All clients connected. Chat started..."); 
+} 
+} 
+2. Client.java 
+import java.io.*; 
+import java.net.*; 
+public class Client { 
+public static void main(String[] args) throws Exception { 
+Socket s = new Socket("localhost", 5000); 
+BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream())); PrintWriter out = new PrintWriter(s.getOutputStream(), true); 
+BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
+System.out.print("Enter your name: "); 
+String name = userInput.readLine(); 
+out.println(name + " joined the chat"); 
+new Thread(() -> { 
+try { String msg; while ((msg = in.readLine()) != null) System.out.println(msg); } catch (Exception e) {} }).start(); 
+String msg; 
+while ((msg = userInput.readLine()) != null) out.println(name + ": " + msg); 
+s.close(); 
+} 
+} 
+EXP 5: 
+LamportAlgorithm.java 
+import java.util.*; 
+public class LamportAlgorithm { 
+static int clock = 0; 
+static void sendEvent(String msg) { 
+clock++; 
+System.out.println("Send: " + msg + " | Clock: " + clock); 
+} 
+static void receiveEvent(String msg, int senderClock) { 
+clock = Math.max(clock, senderClock) + 1;
+System.out.println("Receive: " + msg + " | Clock: " + clock); } 
+public static void main(String[] args) { 
+Scanner sc = new Scanner(System.in); 
+System.out.print("Enter number of events: "); 
+int n = sc.nextInt(); 
+sc.nextLine(); 
+for (int i = 0; i < n; i++) { 
+System.out.print("Enter event type (send/receive): "); String type = sc.nextLine(); 
+if (type.equalsIgnoreCase("send")) { 
+System.out.print("Enter message: "); 
+String msg = sc.nextLine(); 
+sendEvent(msg); 
+} else if (type.equalsIgnoreCase("receive")) { 
+System.out.print("Enter message: "); 
+String msg = sc.nextLine(); 
+System.out.print("Enter sender's clock: "); 
+int senderClock = sc.nextInt(); 
+sc.nextLine(); 
+receiveEvent(msg, senderClock); 
+} 
+} 
+} 
 }
-
-CalculatorServer.java
-import java.io.*;
-import java.net.*;
-
-public class CalculatorServer {
-    public static void main(String[] args) {
-        ServerSocket serverSocket = null;
-        Socket clientSocket = null;
-        ObjectInputStream ois = null;
-        ObjectOutputStream oos = null;
-
-        try {
-            serverSocket = new ServerSocket(5000);
-            System.out.println("Server is waiting for client...");
-
-            clientSocket = serverSocket.accept();
-            System.out.println("Client connected!");
-
-            ois = new ObjectInputStream(clientSocket.getInputStream());
-            oos = new ObjectOutputStream(clientSocket.getOutputStream());
-
-            CalculatorRequest request = (CalculatorRequest) ois.readObject();
-
-            int result = 0;
-            switch (request.getOperation()) {
-                case "add":
-                    result = request.getNum1() + request.getNum2();
-                    break;
-                case "subtract":
-                    result = request.getNum1() - request.getNum2();
-                    break;
-                case "multiply":
-                    result = request.getNum1() * request.getNum2();
-                    break;
-                case "divide":
-                    result = request.getNum1() / request.getNum2();
-                    break;
-                default:
-                    System.err.println("Invalid operation");
-            }
-
-            oos.writeInt(result);
-            oos.flush();
-
-        } catch (IOException | ClassNotFoundException ex) {
-            System.err.println("Error: " + ex.getMessage());
-        } finally {
-            try {
-                if (ois != null) ois.close();
-                if (oos != null) oos.close();
-                if (clientSocket != null) clientSocket.close();
-                if (serverSocket != null) serverSocket.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
+EXP 6: 
+RingAlgorithm.java 
+import java.util.*; 
+public class RingAlgorithm { 
+static int[] nodes; 
+static boolean[] active; 
+static void startElection(int initiator) { 
+System.out.println("Node " + nodes[initiator] + " started election"); 
+int current = initiator; 
+int leader = nodes[initiator]; 
+do { 
+current = (current + 1) % nodes.length; 
+if (active[current]) { 
+System.out.println("Message passed from " + nodes[initiator] + " to " + nodes[current]); if (nodes[current] > leader) leader = nodes[current]; 
+} 
+} while (current != initiator); 
+System.out.println("Leader elected: " + leader); 
+} 
+public static void main(String[] args) { 
+Scanner sc = new Scanner(System.in); 
+System.out.print("Enter number of nodes: "); 
+int n = sc.nextInt(); 
+nodes = new int[n]; 
+active = new boolean[n]; 
+System.out.print("Enter node IDs: "); 
+for (int i = 0; i < n; i++) { 
+nodes[i] = sc.nextInt(); 
+active[i] = true;
+} 
+System.out.print("Enter initiator node index (0 to " + (n - 1) + "): "); int initiator = sc.nextInt(); 
+startElection(initiator); 
+} 
+} 
+EXP 7: 
+import java.util.*; 
+public class RicartAgrawala { 
+static int clock = 0; 
+static void requestCS(int id) { 
+clock++; 
+System.out.println("Process " + id + " requesting CS at clock " + clock); } 
+static void receiveRequest(int id, int senderClock) { 
+clock = Math.max(clock, senderClock) + 1; 
+System.out.println("Process " + id + " received request at clock " + clock); } 
+static void releaseCS(int id) { 
+clock++; 
+System.out.println("Process " + id + " released CS at clock " + clock); } 
+public static void main(String[] args) { 
+Scanner sc = new Scanner(System.in); 
+System.out.print("Enter process ID: "); 
+int id = sc.nextInt(); 
+requestCS(id); 
+System.out.print("Enter sender's clock: ");
+int senderClock = sc.nextInt(); 
+receiveRequest(id, senderClock); 
+releaseCS(id); 
+} 
+} 
+EXP 8: 
+LoadBalancing.java 
+import java.util.*; 
+public class LoadBalancing { 
+static List<String> servers = new ArrayList<>(); 
+static void addServer(String s) { 
+servers.add(s); 
+System.out.println("Server added: " + s); 
+} 
+static void removeServer(String s) { 
+if (servers.remove(s)) System.out.println("Server removed: " + s); else System.out.println("Server not found"); 
+} 
+static void showServers() { 
+System.out.println("Active servers: " + servers); 
+} 
+public static void main(String[] args) { 
+Scanner sc = new Scanner(System.in); 
+while (true) { 
+System.out.print("1-Add Server 2-Remove Server 3-Show Servers 4-Exit: "); int ch = sc.nextInt(); 
+sc.nextLine(); 
+if (ch == 1) {
+System.out.print("Enter server name: "); addServer(sc.nextLine()); 
+} else if (ch == 2) { 
+System.out.print("Enter server name: "); removeServer(sc.nextLine()); 
+} else if (ch == 3) showServers(); 
+else break; 
+} 
+} 
 }
-
-CalculatorClient.java
-import java.io.*;
-import java.net.*;
-
-public class CalculatorClient {
-    public static void main(String[] args) {
-        Socket socket = null;
-        ObjectOutputStream oos = null;
-        ObjectInputStream ois = null;
-       
-        try {
-            socket = new Socket("localhost", 5000);
-
-            oos = new ObjectOutputStream(socket.getOutputStream());
-            ois = new ObjectInputStream(socket.getInputStream());
-
-            CalculatorRequest request = new CalculatorRequest(10, 5, "add");
-
-            oos.writeObject(request);
-            oos.flush();
-
-            int result = ois.readInt();
-            System.out.println("Result from server: " + result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (ois != null) ois.close();
-                if (oos != null) oos.close();
-                if (socket != null) socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-}
-
-Steps RPC
-
-Javac *.java 
-Java CalculatorServer
-Javac *.java
-Java CalculatorClient
