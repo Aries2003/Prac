@@ -264,7 +264,7 @@ public class CalculatorClient {
         }
     }
 }
-EXP 3: 
+EXP 3: CORBA
 1. Hello.idl 
 interface Hello { 
 string sayHello(); 
@@ -467,3 +467,109 @@ else break;
 } 
 } 
 }
+
+EXP 9:
+DSMserver.java
+import java.io.*;
+import java.net.*;
+
+public class DSMserver{
+    public static int sharedVariable = 50;
+
+    public static void main(String args[]){
+        try{
+            ServerSocket ss = new ServerSocket(5000);
+            System.out.println("Server is listening on port 5000");
+
+            while(true){
+                Socket clientSocket = ss.accept();
+                new ClientHandler(clientSocket).start();
+            }
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private static class ClientHandler extends Thread{
+        private final Socket socket;
+
+        public ClientHandler(Socket socket){
+            this.socket = socket;
+        }
+
+        @Override
+        public void run(){
+            try{
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter out = new PrintWriter(socket.getOutputStream(),true);
+
+                out.println("Connected DSM, type 'exit' to quit");
+                String command;
+
+                while((command = in.readLine()) != null){
+                    System.out.println("DEBUG :" + command);
+
+                    if(command.equalsIgnoreCase("get")){
+                        out.println("Accessed shared variable :"+sharedVariable);
+                    }else if(command.equalsIgnoreCase("set")){
+                        try{
+                            int newValue = Integer.parseInt(in.readLine());
+                            sharedVariable = newValue;
+                            out.println("Updated shared variable :"+sharedVariable);
+                        }catch(NumberFormatException e){
+                            out.println("Please enter a valid value !");
+                        }
+                    }else if(command.equalsIgnoreCase("exit")){
+                        out.println("Disconnecting DSM...");
+                        break;
+                    }else{
+                        out.println("Invalid command !");
+                    }
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+} 
+DSMclient.java
+import java.io.*;
+import java.net.*;
+
+public class DSMclient{
+    public static void main(String args[]){
+        try{
+            Socket socket = new Socket("localhost",5000);
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(),true);
+            BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.println(in.readLine());
+
+            String command;
+            while(true){
+                System.out.print("Enter command --> get / set / exit :");
+                command = userInput.readLine();
+                out.println(command);
+
+                if(command.equalsIgnoreCase("set")){
+                    System.out.print("Enter the new value :");
+                    out.println(userInput.readLine());
+                }
+
+                String response = in.readLine();
+                System.out.println(response);
+
+                if(command.equalsIgnoreCase("exit")){
+                    break;
+                }
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+}
+
