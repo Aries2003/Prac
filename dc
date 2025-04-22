@@ -573,3 +573,12 @@ public class DSMclient{
     }
 }
 
+
+
+idlj -fall Hello idl
+
+javac
+
+tnameserv -ORBIntialPort 1050
+java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
+
