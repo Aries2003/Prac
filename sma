@@ -1,10 +1,12 @@
 # Network features - No dataset
 
+—--------------------------------------------------------------------------------
 
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 
+—--------------------------------------------------------------------------------
 
 #  create graph
 G = nx.erdos_renyi_graph(15,0.2,21)
@@ -12,12 +14,14 @@ G = nx.erdos_renyi_graph(15,0.2,21)
 
 degree_dict = dict(G.degree())
 
+—--------------------------------------------------------------------------------
 
 # assign colors
 node_colors = [
     "green" if degree_dict[node] > 1 else "grey" for node in G.nodes()
 ]
 
+—--------------------------------------------------------------------------------
 
 pos = nx.spring_layout(G,k=1.5)
 
@@ -34,6 +38,7 @@ nx.draw(G,pos,
         )
 plt.show()
 
+—--------------------------------------------------------------------------------
 
 # calculate the features
 degree_centrality = nx.degree_centrality(G)
@@ -44,6 +49,7 @@ clustering = nx.clustering(G)
 bridges = list(nx.bridges(G))
 hubs = sorted(degree_dict.items(),reverse=True,key= lambda x:x[1])
 
+—--------------------------------------------------------------------------------
 
 df = pd.DataFrame({
     "Node":list(G.nodes()),
@@ -54,9 +60,11 @@ df = pd.DataFrame({
     "clustering coeeficient":[clustering[node] for node in G.nodes()],
 })
 
+—--------------------------------------------------------------------------------
 
 df
 
+—--------------------------------------------------------------------------------
 
 # finding top node for each metric
 
@@ -69,9 +77,11 @@ metric = pd.DataFrame({
   "clustering_node" : df.loc[df['clustering coeeficient'].idxmax()]
 })
 
+—--------------------------------------------------------------------------------
 
 metric
 
+—--------------------------------------------------------------------------------
 
 
 # clustering
@@ -107,3 +117,97 @@ nx.draw(G,pos,
         )
 plt.show()
 
+—--------------------------------------------------------------------------------
+
+# Inlinks outlinks - no dataset, url of source required
+
+—--------------------------------------------------------------------------------
+
+import networkx as nx
+import pandas as pd
+import numpy as np
+from bs4 import BeautifulSoup
+import requests
+from urllib.parse import urlparse,urljoin
+import matplotlib.pyplot as plt
+
+—--------------------------------------------------------------------------------
+
+def getLinks(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text,"html.parser")
+    baseDomain = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(url))
+
+
+    all_links = soup.find_all("a",href=True)
+
+
+    inlinks,outlinks = set(),set()
+    for a in all_links:
+        link = urljoin(baseDomain,a['href'])
+        (inlinks if link.startswith(baseDomain) else outlinks).add(link)
+
+
+    return inlinks,outlinks
+
+—--------------------------------------------------------------------------------
+
+def visualize(baseUrl,inlinks,outlinks,maxLink=30):
+    G = nx.DiGraph()
+
+
+    G.add_node(baseUrl,type="base")
+
+
+    for link in list(inlinks)[:maxLink]:
+        G.add_node(link,type="inlink")
+        G.add_edge(link,baseUrl)
+
+
+    for link in list(outlinks)[:maxLink]:
+        G.add_node(link,type="outlink")
+        G.add_edge(baseUrl,link)
+
+
+    colors = {
+        "base":"red",
+        "inlink":"green",
+        "outlink":"yellow"
+    }
+
+
+    node_colors = [
+        colors[G.nodes[node]['type']] for node in G.nodes()
+    ]
+
+
+    pos = nx.spring_layout(G,k=1.5)
+
+
+    plt.figure(figsize=(8,6))
+    nx.draw(G,pos,
+            node_color=node_colors,
+            edge_color="grey",
+            with_labels=True,
+            font_size=12,
+            node_size=500,
+            arrowstyle="-|>",
+            arrowsize=15
+            )
+    plt.title(f"Top {maxLink} links")
+    plt.show()
+
+—--------------------------------------------------------------------------------
+
+url = "https://mid-day.com/lifestyle/health-and-fitness/article/researchers-use-ai-to-decode-how-brain-processes-language-during-conversations-23523512"
+inlinks,outlinks = getLinks(url)
+
+—--------------------------------------------------------------------------------
+
+visualize(url,inlinks,outlinks)
+
+—--------------------------------------------------------------------------------
+
+visualize(url,inlinks,outlinks,10)
+
+—--------------------------------------------------------------------------------
